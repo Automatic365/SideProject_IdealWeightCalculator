@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ideal Body Weight Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .input-group {
+            margin: 1rem 0;
+        }
+
+        input {
+            padding: 0.5rem;
+            margin: 0.5rem;
+            width: 200px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .visualization {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 2rem;
+            padding: 1rem;
+        }
+
+        .figure {
+            text-align: center;
+            margin: 1rem;
+        }
+
+        .body-shape {
+            width: 120px;
+            height: 300px;
+            margin: 0 auto;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        /* Human-like silhouette */
+        .body-shape::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: currentColor;
+            border-radius: 50%;
+        }
+
+        .body-shape::after {
+            content: '';
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: calc(100% - 40px);
+            background: currentColor;
+            clip-path: polygon(
+                30% 0,    /* Shoulders left */
+                70% 0,    /* Shoulders right */
+                70% 20%,  /* Chest right */
+                85% 50%,  /* Hip right */
+                60% 100%, /* Leg right */
+                40% 100%, /* Leg left */
+                15% 50%,  /* Hip left */
+                30% 20%   /* Chest left */
+            );
+        }
+
+        .current-body {
+            color: rgba(255, 0, 0, 0.3);
+            border: 2px solid rgba(255, 0, 0, 0.5);
+        }
+
+        .target-body {
+            color: rgba(0, 128, 0, 0.3);
+            border: 2px solid rgba(0, 128, 0, 0.5);
+        }
+
+        .figure-label {
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+
+        .stats {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ideal Body Weight Calculator</h1>
+        <div class="input-group">
+            <label for="current-weight">Current Weight (lbs):</label><br>
+            <input type="number" id="current-weight" placeholder="Enter your current weight">
+        </div>
+        <div class="input-group">
+            <label for="current-bf">Current Body Fat %:</label><br>
+            <input type="number" id="current-bf" placeholder="Enter your current body fat %">
+        </div>
+        <div class="input-group">
+            <label for="target-bf">Target Body Fat %:</label><br>
+            <input type="number" id="target-bf" placeholder="Enter your target body fat %">
+        </div>
+        <button onclick="calculateIdealWeight()">Calculate</button>
+        <div id="result"></div>
+
+        <div class="visualization">
+            <div class="figure">
+                <div class="body-shape current-body" id="current-shape"></div>
+                <div class="figure-label">Current</div>
+                <div class="stats" id="current-stats"></div>
+            </div>
+            <div class="figure">
+                <div class="body-shape target-body" id="target-shape"></div>
+                <div class="figure-label">Target</div>
+                <div class="stats" id="target-stats"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateIdealWeight() {
+            // Get input values
+            const currentWeight = parseFloat(document.getElementById('current-weight').value);
+            const currentBF = parseFloat(document.getElementById('current-bf').value) / 100;
+            const targetBF = parseFloat(document.getElementById('target-bf').value) / 100;
+
+            // Validate inputs
+            if (isNaN(currentWeight) || isNaN(currentBF) || isNaN(targetBF)) {
+                document.getElementById('result').innerHTML = 'Please fill in all fields with valid numbers';
+                return;
+            }
+
+            // Calculate lean body mass
+            const leanMass = currentWeight * (1 - currentBF);
+            
+            // Calculate ideal weight based on target body fat percentage
+            const idealWeight = leanMass / (1 - targetBF);
+            
+            // Display results
+            document.getElementById('result').innerHTML = `
+                Your ideal body weight at ${(targetBF * 100).toFixed(1)}% body fat would be: 
+                ${idealWeight.toFixed(1)} lbs<br>
+                (Lean mass: ${leanMass.toFixed(1)} lbs)
+            `;
+
+            // Update visualizations
+            updateVisualization(currentWeight, currentBF, idealWeight, targetBF);
+        }
+
+        function updateVisualization(currentWeight, currentBF, targetWeight, targetBF) {
+            // Scale factor for visualization (adjust body width based on weight)
+            const baseWidth = 120;
+            const currentWidth = baseWidth * (currentWeight / 150); // 150 is a reference weight
+            const targetWidth = baseWidth * (targetWeight / 150);
+
+            // Update current body visualization
+            const currentShape = document.getElementById('current-shape');
+            currentShape.style.width = `${currentWidth}px`;
+            document.getElementById('current-stats').innerHTML = `
+                ${currentWeight.toFixed(1)} lbs<br>
+                ${(currentBF * 100).toFixed(1)}% BF
+            `;
+
+            // Update target body visualization
+            const targetShape = document.getElementById('target-shape');
+            targetShape.style.width = `${targetWidth}px`;
+            document.getElementById('target-stats').innerHTML = `
+                ${targetWeight.toFixed(1)} lbs<br>
+                ${(targetBF * 100).toFixed(1)}% BF
+            `;
+        }
+    </script>
+</body>
+</html> 
