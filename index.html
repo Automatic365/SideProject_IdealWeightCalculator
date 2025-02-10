@@ -127,10 +127,114 @@
             margin-top: 0.5rem;
             color: #666;
         }
+
+        /* Add these new styles for the modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .modal h2 {
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .modal .input-group {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal select {
+            padding: 0.5rem;
+            margin: 0.5rem;
+            width: 200px;
+        }
+
+        .height-inputs {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .height-inputs input {
+            width: 80px;
+        }
+
+        #submit-profile {
+            background-color: #4CAF50;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+
+        #submit-profile:hover {
+            background-color: #45a049;
+        }
+
+        .profile-info {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
+    <!-- Add the intake modal -->
+    <div id="intake-modal" class="modal">
+        <div class="modal-content">
+            <h2>Profile Information</h2>
+            <div class="input-group">
+                <label for="age">Age:</label><br>
+                <input type="number" id="age" min="1" max="120" placeholder="Enter your age">
+            </div>
+            <div class="input-group">
+                <label for="sex">Sex:</label><br>
+                <select id="sex">
+                    <option value="">Select sex</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Height:</label><br>
+                <div class="height-inputs">
+                    <input type="number" id="feet" min="1" max="8" placeholder="Feet">
+                    <span>ft</span>
+                    <input type="number" id="inches" min="0" max="11" placeholder="Inches">
+                    <span>in</span>
+                </div>
+            </div>
+            <button id="submit-profile">Continue</button>
+        </div>
+    </div>
+
+    <!-- Add profile info display to the main container -->
     <div class="container">
+        <div class="profile-info" id="profile-display"></div>
         <h1>Ideal Body Weight Calculator</h1>
         <div class="input-group">
             <label for="current-weight">Current Weight (lbs):</label><br>
@@ -162,6 +266,49 @@
     </div>
 
     <script>
+        // Add these variables at the top
+        let userAge, userSex, userHeightFt, userHeightIn;
+
+        // Show modal on page load
+        window.onload = function() {
+            document.getElementById('intake-modal').style.display = 'block';
+        }
+
+        // Handle profile submission
+        document.getElementById('submit-profile').addEventListener('click', function() {
+            const age = document.getElementById('age').value;
+            const sex = document.getElementById('sex').value;
+            const feet = document.getElementById('feet').value;
+            const inches = document.getElementById('inches').value;
+
+            // Validate inputs
+            if (!age || !sex || !feet) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Store values
+            userAge = parseInt(age);
+            userSex = sex;
+            userHeightFt = parseInt(feet);
+            userHeightIn = parseInt(inches) || 0;
+
+            // Hide modal
+            document.getElementById('intake-modal').style.display = 'none';
+
+            // Update profile display
+            updateProfileDisplay();
+        });
+
+        function updateProfileDisplay() {
+            const totalInches = (userHeightFt * 12) + userHeightIn;
+            const heightDisplay = `${userHeightFt}'${userHeightIn}"`;
+            
+            document.getElementById('profile-display').innerHTML = `
+                Profile: ${userAge} years old | ${userSex} | ${heightDisplay}
+            `;
+        }
+
         function calculateIdealWeight() {
             // Get input values
             const currentWeight = parseFloat(document.getElementById('current-weight').value);
